@@ -89,6 +89,8 @@ class WebSocketAgent:
             err_msg = str(e)
             if "429" in err_msg:
                 user_err = "⚠️ **Rate limit reached (HTTP 429)**: The Gemini API free quota for this minute was reached. Please wait ~30 seconds and try again!"
+            elif "503" in err_msg:
+                user_err = "⚠️ **Service Temporarily Busy (HTTP 503)**: Google's AI servers were briefly overloaded. Please retry your prompt in a few seconds!"
             else:
                 user_err = f"⚠️ **Error**: {err_msg}"
             try:

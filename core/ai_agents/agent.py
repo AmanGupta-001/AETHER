@@ -78,6 +78,7 @@ class Agent:
                     "model": model_name,
                     "api_key": api_key,
                     "request_timeout": 30,
+                    "max_retries": 5,
                     "streaming": STREAM_ENABLED,
                 }
 
