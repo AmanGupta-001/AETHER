@@ -3,61 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <script src="/static/lib_files/marked.min.js?v=2"></script>
-    <script src="/static/ui_elements/settings.js?v=2"></script>
-    <script src="/static/ui_elements/chatHistoryList.js?v=2"></script>
-    <script src="/static/chat.js?v=2"></script>
-    <script src="/static/recording.js?v=2"></script>
-    <script src="/static/socketEvents.js?v=2"></script>
-    <script src="/static/index.js?v=2" defer></script>
-    <script src="/static/eventlisteners.js?v=2"></script>
-    <link rel="stylesheet" href="/static/index.css?v=2">
+    <script src="/static/lib_files/marked.min.js?v=3"></script>
+    <script src="/static/ui_elements/settings.js?v=3"></script>
+    <script src="/static/ui_elements/chatHistoryList.js?v=3"></script>
+    <script src="/static/chat.js?v=3"></script>
+    <script src="/static/recording.js?v=3"></script>
+    <script src="/static/socketEvents.js?v=3"></script>
+    <script src="/static/index.js?v=3" defer></script>
+    <script src="/static/eventlisteners.js?v=3"></script>
+    <link rel="stylesheet" href="/static/index.css?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/static/resources/favicon.ico">
-    <title>Aether</title>
+    <title>AETHER — Autonomous Multi-Agent AI</title>
 </head>
 <body>
     <div id="settingsPage"></div>
 
-    <header>
-        <h2 class="heading russo-one-regular" id="jarvis">AETHER</h2>
-        <div class="toolbar">
-            <image id="settingsButton" class="icon" src="./static/resources/settings.png" onclick="settingsPage()"></image>
+    <header class="aether-header">
+        <div class="brand-hero">
+            <div class="badge-pill">
+                <span class="status-pulse-dot"></span>
+                AUTONOMOUS MULTI-AGENT AI
+            </div>
+            <div class="brand-title-wrap">
+                <h1 class="brand-title">AETHER</h1>
+                <div class="cyan-accent-line"></div>
+                <p class="brand-subtitle">Autonomous Multi-Agent AI System</p>
+                <p class="brand-description">A graph-driven personal AI agent for autonomous task execution, real-time live intelligence, and bi-directional calendar management.</p>
+            </div>
+        </div>
+        <div class="header-network-visual">
+            <div class="cyber-orb">
+                <div class="orb-ring ring-outer"></div>
+                <div class="orb-ring ring-inner"></div>
+                <div class="orb-center">
+                    <span class="orb-icon">🤖</span>
+                </div>
+            </div>
+            <div class="toolbar">
+                <button id="settingsButton" class="cyber-icon-btn" onclick="settingsPage()" title="Settings & Integrations">
+                    <img class="icon" src="./static/resources/settings.png" alt="Settings">
+                </button>
+            </div>
         </div>
     </header>
 
     <div class="mainContent">
-        <div class="chatHistory"></div>
+        <aside class="chatHistory"></aside>
 
-        <div class="chat">
+        <main class="chat">
             <div id="chat_history_container">
                 <div name="chat_list" id="chat_list"></div>
-                <div name="history" id="chat_history"></div>
+                <ul name="history" id="chat_history"></ul>
             </div>
 
             <div class="chat_input_container">
                 <div id="chat_input">
-                    <textarea id="chat_input_text" placeholder="Type a message to Aether..."></textarea>
-                    <button id="voice_button">🎤</button>
+                    <textarea id="chat_input_text" placeholder="Send a command or query to Aether..." rows="1"></textarea>
+                    <button id="voice_button" title="Voice Input">🎤</button>
                 </div>
             </div>
-            <button id="send_button">Send</button>
-            <p style="display:inline;margin-left:12px;">Parse AI output</p>
-            <input id="checkbox" style="margin-left:12px;" type="checkbox" checked>
-            <button id="clear_log">Clear chat log</button>
-        </div>
 
-        <div class="processesContainer">
-            <p style="margin-top:36px">Debug &amp; running Aether processes</p>
-        </div>
+            <div class="chat_controls_row">
+                <button id="send_button">
+                    <span>Execute</span>
+                    <svg class="send-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+                <div class="toggle-wrap">
+                    <input id="checkbox" type="checkbox" checked>
+                    <label for="checkbox">Markdown Stream</label>
+                </div>
+                <button id="clear_log">Clear Chat</button>
+            </div>
+        </main>
+
+        <aside class="processesContainer">
+            <div class="panel-header">
+                <span class="panel-tag">GRAPH TELEMETRY</span>
+                <p class="panel-title">Active Node Processes</p>
+            </div>
+        </aside>
     </div>
 
     <div class="linebreak"></div>
-    <footer>
-        <label>Permissions and licensing:</label>
-        <a href="https://fonts.google.com/specimen/Russo+One/license#permission-conditions">Russo font license.</a>
+    <footer class="aether-footer">
+        <div class="footer-status">
+            <span class="status-indicator"></span> System Active &bull; LangGraph Execution Runtime
+        </div>
+        <div class="footer-links">
+            <a href="https://github.com/AmanGupta-001/AETHER" target="_blank">AETHER GitHub</a>
+            <span>&bull;</span>
+            <a href="/docs" target="_blank">API Docs</a>
+        </div>
     </footer>
 </body>
 </html>
