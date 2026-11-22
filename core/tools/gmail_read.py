@@ -114,3 +114,4 @@ def read_gmail_emails(max_emails: int = 5, query: Optional[str] = None) -> str:
 
 def get_tool() -> StructuredTool:
     return read_gmail_emails
+

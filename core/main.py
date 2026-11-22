@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Depends, H
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, RedirectResponse, HTMLResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 from typing import Dict, List
 import asyncio
@@ -50,6 +51,8 @@ logger.info("Booting....")
 check_folders()  # Check directories are made for user data
 
 #
+from starlette.middleware.base import BaseHTTPMiddleware
+
 # Server config
 #
 app = FastAPI()
@@ -61,6 +64,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# No-cache middleware for static files so the browser always fetches fresh JS/CSS
+class NoCacheStaticMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+app.add_middleware(NoCacheStaticMiddleware)
 
 # Mount static folder for UI
 app.mount("/static", StaticFiles(directory="static"), name="static")
