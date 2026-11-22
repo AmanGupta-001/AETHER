@@ -13,6 +13,7 @@ import tools.rag_search as rag_search
 import tools.vision as vision
 import tools.painter as painter
 import tools.krypto_time as krypto_tool
+import tools.gmail_read as gmail_read
 
 
 def get_tools() -> list[StructuredTool]:
@@ -30,6 +31,7 @@ def get_tools() -> list[StructuredTool]:
     tools.append(vision.get_tool())
     tools.append(painter.get_tool())
     tools.append(krypto_tool.get_tool())
+    tools.append(gmail_read.get_tool())
 
     return tools
 
@@ -37,6 +39,7 @@ def get_perplexity_based_tools() -> list[StructuredTool]:
     tools = []
     tools.append(web_search.get_tool())
     tools.append(rag_search.get_tool())
+    tools.append(gmail_read.get_tool())
 
     return tools
 

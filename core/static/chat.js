@@ -22,6 +22,9 @@ sendMessage = () => {
         console.log("Error adding user message:", e);
     }
 
+    // Track this for chat history saving
+    if (typeof lastUserMessage !== "undefined") lastUserMessage = userInput;
+
     // Send the message via the open socket
     try {
         const payload = {prompt: userInput, conversation_id: String(state.activeConversationId)};

@@ -13,6 +13,9 @@ Main js file for loading the dynamic UI elements.
 
     document.querySelector(".chatHistory").innerHTML += chatHistoryList()
 
+    // Load real chat history from server
+    loadChatHistory();
+
     // To hide settings page when clicking somewhere else after it's opened.
     document.addEventListener('click', function(event){
         const settings = document.getElementById("settingsPage");

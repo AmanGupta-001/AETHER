@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, RedirectResponse, HTMLResponse
 from pydantic import BaseModel
 from typing import Dict, List
 import asyncio
@@ -10,6 +10,8 @@ import requests
 import logging
 from collections import defaultdict
 import json
+from datetime import datetime
+from pathlib import Path
 from graph.graphAgent import Graph
 import ai_agents.neo_agent_llama
 from ai_agents.neo_think_agent import NeoThinkAgent
@@ -193,6 +195,132 @@ async def websocket_health(session_id: str):
     if session_id in active_websockets:
         return {"status": "connected", "session_id": session_id}
     return {"status": "disconnected", "session_id": session_id}
+
+# ── Chat Session REST API ───────────────────────────────────────────────────────
+
+@app.get("/api/sessions")
+async def get_sessions():
+    """Return all sessions with title + preview for the sidebar."""
+    result = []
+    for sid, data in active_chats.items():
+        history = data.get("chat_history", [])
+        if not history:
+            continue
+        first = history[0]
+        title   = (first.get("human_message") or "New conversation")[:40]
+        preview = (first.get("ai_message")    or "")[:80]
+        updated = data.get("updated_at", "")
+        result.append({"session_id": sid, "title": title, "preview": preview, "updated_at": updated})
+    # Newest first
+    result.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
+    return result
+
+class SaveSessionRequest(BaseModel):
+    session_id: str
+    human_message: str
+    ai_message: str
+
+@app.post("/api/sessions/save")
+async def save_session(data: SaveSessionRequest):
+    """Persist a human↔AI exchange into active_chats."""
+    sid = data.session_id
+    entry = {
+        "human_message": data.human_message,
+        "ai_message":    data.ai_message,
+        "timestamp":     datetime.utcnow().isoformat()
+    }
+    active_chats[sid]["chat_history"].append(entry)
+    active_chats[sid]["updated_at"] = datetime.utcnow().isoformat()
+    return {"status": "saved"}
+
+# ── Gmail OAuth2 ────────────────────────────────────────────────────────────────
+
+GMAIL_TOKEN_PATH   = Path(__file__).resolve().parent / "gmail_token.json"
+GMAIL_SECRETS_PATH = Path(__file__).resolve().parent / "gmail_oauth_client.json"
+GMAIL_SCOPES       = ["https://www.googleapis.com/auth/gmail.readonly"]
+GMAIL_REDIRECT_URI = "http://localhost:3000/gmail/callback"
+
+@app.get("/gmail/status")
+async def gmail_status():
+    """Returns whether Gmail is currently connected."""
+    connected = GMAIL_TOKEN_PATH.exists()
+    email = None
+    if connected:
+        try:
+            from google.oauth2.credentials import Credentials
+            from googleapiclient.discovery import build as gbuild
+            creds = Credentials.from_authorized_user_file(str(GMAIL_TOKEN_PATH), GMAIL_SCOPES)
+            svc   = gbuild("oauth2", "v2", credentials=creds)
+            info  = svc.userinfo().get().execute()
+            email = info.get("email")
+        except Exception:
+            connected = False
+    return {"connected": connected, "email": email}
+
+@app.get("/gmail/auth")
+async def gmail_auth():
+    """Kick off the OAuth2 flow — redirect the user to Google consent screen."""
+    if not GMAIL_SECRETS_PATH.exists():
+        return HTMLResponse("""
+        <html><body style="font-family:sans-serif;background:#111;color:#eee;padding:40px">
+        <h2>⚠️ Gmail OAuth client secrets not found</h2>
+        <p>To link Gmail, you need a <strong>gmail_oauth_client.json</strong> file inside <code>core/</code>.<br>
+        Follow these steps:</p>
+        <ol>
+          <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#00d2ff">Google Cloud Console → Credentials</a></li>
+          <li>Create an <strong>OAuth 2.0 Client ID</strong> → Application type: <em>Web application</em></li>
+          <li>Add <code>http://localhost:3000/gmail/callback</code> as an Authorized redirect URI</li>
+          <li>Download the JSON and save it as <code>core/gmail_oauth_client.json</code></li>
+          <li>Enable the <strong>Gmail API</strong> and <strong>People API</strong> in your project</li>
+          <li>Return here: <a href="/gmail/auth" style="color:#00d2ff">http://localhost:3000/gmail/auth</a></li>
+        </ol>
+        </body></html>
+        """, status_code=200)
+
+    from google_auth_oauthlib.flow import Flow
+    flow = Flow.from_client_secrets_file(
+        str(GMAIL_SECRETS_PATH),
+        scopes=GMAIL_SCOPES + ["https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=GMAIL_REDIRECT_URI
+    )
+    auth_url, _ = flow.authorization_url(prompt="consent", access_type="offline")
+    return RedirectResponse(auth_url)
+
+@app.get("/gmail/callback")
+async def gmail_callback(request: Request):
+    """Handle the OAuth2 callback, save token, and show success."""
+    if not GMAIL_SECRETS_PATH.exists():
+        raise HTTPException(status_code=500, detail="OAuth secrets not configured")
+
+    from google_auth_oauthlib.flow import Flow
+    flow = Flow.from_client_secrets_file(
+        str(GMAIL_SECRETS_PATH),
+        scopes=GMAIL_SCOPES + ["https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=GMAIL_REDIRECT_URI
+    )
+    flow.fetch_token(authorization_response=str(request.url))
+    creds = flow.credentials
+    GMAIL_TOKEN_PATH.write_text(creds.to_json())
+
+    return HTMLResponse("""
+    <html><body style="font-family:sans-serif;background:#111;color:#eee;padding:40px;text-align:center">
+    <h2 style="color:#00d2ff">✅ Gmail Connected!</h2>
+    <p>Your Gmail account is now linked to AETHER.</p>
+    <p>You can now ask AETHER things like:<br>
+    <em>"Show me my latest emails"</em> &nbsp;•&nbsp;
+    <em>"Do I have any unread messages from my boss?"</em> &nbsp;•&nbsp;
+    <em>"Summarise my inbox"</em></p>
+    <script>setTimeout(() => window.close(), 3000);</script>
+    <p style="color:#666;font-size:13px">This window will close automatically in 3 seconds.</p>
+    </body></html>
+    """)
+
+@app.post("/gmail/disconnect")
+async def gmail_disconnect():
+    """Remove stored Gmail token."""
+    if GMAIL_TOKEN_PATH.exists():
+        GMAIL_TOKEN_PATH.unlink()
+    return {"status": "disconnected"}
 
 #
 # WebSocket Endpoints

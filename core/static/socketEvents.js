@@ -25,6 +25,8 @@ function connectWebSocket() {
         reconnectInterval = 2000; // Reset reconnect interval
         reconnectAttempts = 0;
         socket.send(JSON.stringify({ event: "get_chat_history" }));
+        // Refresh sidebar to highlight active session
+        if (typeof loadChatHistory === "function") loadChatHistory();
     };
     
     socket.onclose = function(event) {
@@ -103,6 +105,9 @@ async function handleAiChunk(chunk) {
   if (chat_history) chat_history.scrollTop = chat_history.scrollHeight;
 }
 
+// Track last user message for chat history saving
+let lastUserMessage = "";
+
 // Function to handle final "ai_message"
 async function handleAiMessage(message) {
   if (typeof setLoading === "function") setLoading(false);
@@ -116,6 +121,23 @@ async function handleAiMessage(message) {
   }
   let chat_history = document.getElementById("chat_history");
   if (chat_history) chat_history.scrollTop = chat_history.scrollHeight;
+
+  // Save this exchange to backend and refresh sidebar
+  if (lastUserMessage) {
+    try {
+      await fetch('/api/sessions/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          session_id: session_id,
+          human_message: lastUserMessage,
+          ai_message: message
+        })
+      });
+      if (typeof loadChatHistory === "function") loadChatHistory();
+    } catch(e) { console.warn("Could not save session:", e); }
+    lastUserMessage = "";
+  }
 }
 
 // Function to handle incoming "recording" messages
