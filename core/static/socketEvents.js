@@ -62,7 +62,6 @@ function connectWebSocket() {
     socket.onmessage = async function(ws_event) {
         // Your existing message handling code
         let message = JSON.parse(ws_event.data);
-        console.log(message.event);
 
         if (message.event === "ai_message") {
             await handleAiMessage(message.data);
@@ -78,6 +77,8 @@ function connectWebSocket() {
             await handleToolMessage(message.data);
         } else if (message.event === "chat_history") {
             await handleChatHistory(message.data);
+        } else {
+            console.warn("Unknown or missing event in message:", message);
         }
     };
 }

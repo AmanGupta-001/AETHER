@@ -13,7 +13,7 @@ class WebSocketAgent:
         """
         Run the agent with a user prompt and send the response via FastAPI WebSockets.
         """
-        config = {"configurable": {"thread_id": "1"}, "recursion_limit": 50}
+        config = {"configurable": {"thread_id": session_id}, "recursion_limit": 50}
         
         # Check if websocket exists for session
         if websocket is None:
@@ -22,9 +22,7 @@ class WebSocketAgent:
                 print(f"No active websocket for session {session_id}")
                 return "Connection lost. Please refresh the page to reconnect."
             websocket = main.active_websockets[session_id]
-        print("Getting websocket...")
-        print(main.active_websockets)
-        print(websocket)
+        print(f"Getting websocket for session {session_id}...")
         
         try:
             input_data = {"messages": [HumanMessage(content=user_prompt)]}

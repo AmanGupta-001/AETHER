@@ -49,9 +49,8 @@ class CalendarSubGraph(WebSocketAgent):
         )
         log.debug("Added conditional edges from calendar node")
         
-        # Using a simpler compile approach without input/output mapping
-        # since the version doesn't support those parameters
-        self.calendar_subgraph = self.workflow.compile(checkpointer=memory)
+        # Using no checkpointer so each calendar invocation starts fresh (prevents recursion on repeated queries)
+        self.calendar_subgraph = self.workflow.compile()
         log.info("Successfully compiled CalendarSubGraph workflow")
 
         try:

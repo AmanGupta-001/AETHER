@@ -132,25 +132,22 @@ Instantiated Graph Agent....
         Transfer calendar events from the most recent calendar subgraph execution
         back to the main graph state.
         """
-        if self.calendarSubgraph:
-            try:
-                calendar_state = self.calendarSubgraph.calendar_subgraph.get_state(config={"configurable": {"thread_id": "1"}})
-                calendar_values = calendar_state.values if hasattr(calendar_state, 'values') else (calendar_state if isinstance(calendar_state, dict) else {})
-                
-                if calendar_values and calendar_values.get("calendar_events"):
-                    if "calendar_events" not in state:
-                        state["calendar_events"] = {}
-                    
-                    for event_id, event_info in calendar_values["calendar_events"].items():
-                        state["calendar_events"][event_id] = event_info
-                    
-                    if "data" not in state:
-                        state["data"] = {}
-                    if "calendar" not in state["data"]:
-                        state["data"]["calendar"] = {}
-                    
-                    state["data"]["calendar"]["events"] = state["calendar_events"]
-            except Exception as e:
-                print(f"Error transferring calendar events: {e}")
-        
+        # Calendar events are already in the main state via subgraph outputs
+        # Just ensure the data dict is updated for the response_generator
+        try:
+            if state.get("calendar_events"):
+                if "data" not in state:
+                    state["data"] = {}
+                if "calendar" not in state["data"]:
+                    state["data"]["calendar"] = {}
+                state["data"]["calendar"]["events"] = state["calendar_events"]
+            # Also check messages for ToolMessage results from the calendar subgraph
+            tool_messages = [m for m in state.get("messages", []) if isinstance(m, ToolMessage)]
+            if tool_messages and "data" not in state:
+                state["data"] = {}
+            if tool_messages:
+                state["data"]["calendar_tool_results"] = [m.content for m in tool_messages]
+        except Exception as e:
+            print(f"Error transferring calendar events: {e}")
+
         return state

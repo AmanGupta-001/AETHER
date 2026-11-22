@@ -236,7 +236,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             ### Get chat history
             elif event_type == "get_chat_history":
                 history = active_chats.get(session_id, {"chat_history": []})
-                await ws_manager.send_message(session_id, json.dumps(history))
+                await ws_manager.send_message(session_id, json.dumps({"event": "chat_history", "data": history}))
 
     except WebSocketDisconnect:
         ws_manager.disconnect(session_id)
