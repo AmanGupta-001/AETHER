@@ -537,6 +537,18 @@ body {
     box-shadow: 0 0 12px var(--cyan-glow);
 }
 
+#voice_button.recording-active {
+    background: rgba(255, 59, 48, 0.2);
+    border-color: #ff3b30;
+    box-shadow: 0 0 16px rgba(255, 59, 48, 0.6);
+    animation: voicePulse 1.2s infinite ease-in-out;
+}
+
+@keyframes voicePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(255, 59, 48, 0.6); }
+    50% { transform: scale(1.08); box-shadow: 0 0 22px rgba(255, 59, 48, 0.9); }
+}
+
 /* Chat Controls Row */
 .chat_controls_row {
     display: flex;
