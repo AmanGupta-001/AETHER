@@ -97,16 +97,15 @@ async function addStreamedMessage(uuid, messagePart) {
 }
 
 async function addToolResponseToProcessContainer(toolResponse) {
+  let processesContainer = document.querySelector(".processesContainer");
+  if (!processesContainer) return;
   let html = /*html*/ `
     <div class="processElement">
         <img class="process_icon" src="./static/resources/tool_icon.png" alt="Tool Icon">
         <div class="process_message">${toolResponse}</div>
     </div>
     <hr style="border: 1px solid rgba(255, 255, 255, 0.1);">`;
-  document.querySelector(".processesContainer").innerHTML += html;
-
-  // Auto-scroll to the latest process
-  let processesContainer = document.querySelector(".processesContainer");
+  processesContainer.innerHTML += html;
   processesContainer.scrollTop = processesContainer.scrollHeight;
 }
 async function addStreamedRecording(uuid, messagePart) {

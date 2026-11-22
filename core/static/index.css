@@ -231,10 +231,13 @@ body {
 .mainContent {
     display: flex;
     flex-direction: row;
-    gap: 16px;
-    padding: 16px 24px;
+    gap: 20px;
+    padding: 18px 32px;
     flex: 1;
-    min-height: calc(100vh - 220px);
+    min-height: calc(100vh - 190px);
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 /* Left Sidebar: Chat History */
@@ -617,71 +620,7 @@ body {
     background: rgba(255, 107, 107, 0.08);
 }
 
-/* ============================================================================
-   RIGHT SIDEBAR: PROCESSES & GRAPH TELEMETRY
-   ============================================================================ */
 
-.processesContainer {
-    width: 320px;
-    min-width: 280px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-}
-
-.panel-header {
-    border-bottom: 1px solid var(--border-subtle);
-    padding-bottom: 12px;
-    margin-bottom: 4px;
-}
-
-.panel-tag {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: var(--cyan-primary);
-    text-transform: uppercase;
-}
-
-.panel-title {
-    font-family: var(--font-heading);
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffffff;
-    margin-top: 2px;
-}
-
-.processElement {
-    background: var(--bg-card);
-    border: 1px solid rgba(0, 210, 255, 0.15);
-    border-left: 3px solid var(--cyan-primary);
-    border-radius: 8px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 12.5px;
-    color: var(--text-secondary);
-    line-height: 1.45;
-}
-
-.process_icon {
-    width: 18px;
-    height: 18px;
-    filter: drop-shadow(0 0 4px var(--cyan-primary));
-}
-
-.process_message {
-    word-break: break-word;
-    font-family: var(--font-mono);
-    font-size: 12px;
-}
 
 /* ============================================================================
    SETTINGS MODAL (Cyber Theme)
@@ -906,7 +845,7 @@ body {
     .mainContent {
         flex-direction: column;
     }
-    .chatHistory, .processesContainer {
+    .chatHistory {
         width: 100%;
         max-height: 260px;
     }
