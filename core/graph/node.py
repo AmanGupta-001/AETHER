@@ -179,7 +179,18 @@ class Node:
 
             Instructions:
             - Answer the user's request directly, accurately, and politely.
-            - If calendar events, web search results, or tool outputs are in the messages above, summarize and present the findings clearly to the user.
+            - When presenting calendar events, emails, search results, or tool data, ALWAYS format them as a structured Markdown list with clear line breaks. Example:
+
+              Here is your event:
+
+              - **Event:** [Name]
+              - **Start:** [Date & Time]
+              - **End:** [Date & Time]
+              - **Location:** [Location]
+              - **Link:** [View in Google Calendar](URL)
+
+            - Always put a blank line before starting a bulleted list.
+            - Never compress bullet items into a single run-on sentence.
             - Only explain your general capabilities if the user explicitly asks what you can do or who you are.
             """,
         )

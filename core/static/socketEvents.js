@@ -1,3 +1,12 @@
+// Configure marked to preserve linebreaks and format lists cleanly
+if (typeof marked !== "undefined") {
+    if (typeof marked.setOptions === "function") {
+        marked.setOptions({ breaks: true, gfm: true });
+    } else if (typeof marked.use === "function") {
+        marked.use({ breaks: true, gfm: true });
+    }
+}
+
 // Generate a unique session ID and store it in localStorage
 function getSessionId() {
     let storedId = localStorage.getItem('jarvis_session_id');
