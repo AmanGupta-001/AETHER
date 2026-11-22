@@ -1,0 +1,166 @@
+version: '3.8'
+
+# Services to be built in order.
+services:
+  stable-diffusion:
+    image: imggen
+    container_name: img-generator
+    build:
+      context: .  # Specify the directory for Dockerfile
+      dockerfile: stable-diffusion-dockerfile
+    networks:
+      - backend
+    ports:
+      - "7860:7860" # Expose port 7860 for the web UI
+    expose:
+      - "7860"  # Ensure correct binding
+    volumes:
+      - ./stable-diffusion-webui-forge/models/Stable-diffusion:/stable-diffusion-webui-forge/models/Stable-diffusion
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+              
+  chroma:
+    image: chromadb/chroma
+    container_name: chromadb
+    restart: always
+    networks:
+      - backend
+    expose:     # Only available inside Docker
+      - "8000"  # Ensure correct binding
+    volumes:
+      - chroma_data:/chroma
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    networks:
+      - backend
+    expose:
+      - "27017"
+    volumes:
+      - mongo_data:/data/db
+    command: ["mongod", "--quiet", "--bind_ip", "0.0.0.0", "--logpath", "/dev/null"] # Mutes mongodb logs except errors using --logpath /dev/null
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  llm-service:
+    depends_on:
+      - chroma
+      - mongodb
+    build: ./core
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: ${FLASK_ENV}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      GEMINI_MODEL: ${GEMINI_MODEL}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY}
+      GOOGLE_AUTH_KEY: ${GOOGLE_AUTH_KEY}
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID}
+      TAVILY_API_KEY: ${TAVILY_API_KEY}
+    volumes:
+      - ./core:/app  # Mount application for live changes
+    networks:
+      - backend
+    ports:
+      - "3000:3000"
+      - "11434:11434" # Gives llm-service access to local machine ollama instance
+
+  speech-to-text:
+    build: ./speechToText
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: ${FLASK_ENV}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      GEMINI_MODEL: ${GEMINI_MODEL}
+    volumes:
+      - ./speechToText:/app
+    networks:
+      - backend
+    ports:
+      - "3001:3001"
+
+  redis:
+    image: redis:latest
+    container_name: redis_audio
+    restart: always
+    expose:
+      - "6379"
+    networks:
+      - backend
+    command: >
+      redis-server 
+      --appendonly yes 
+      --save 60 1 
+      --save 300 100 
+      --save 900 1000
+      --maxmemory 1gb
+    volumes:
+      - redis_data:/data
+
+  text-to-speech:
+    build:
+      context: ./textToSpeech
+      dockerfile: Dockerfile
+    networks:
+      - backend
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=${LOG_LEVEL}
+    depends_on:
+      - redis
+
+  phoenix:
+    image: arizephoenix/phoenix:version-8.3.0 # Must be greater than 4.0 version to work
+    depends_on:
+      - db
+    ports:
+      - 6006:6006  # PHOENIX_PORT
+      - 4317:4317  # PHOENIX_GRPC_PORT
+      - 9090:9090  # [Optional] PROMETHEUS PORT IF ENABLED
+    environment:
+      - PHOENIX_SQL_DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - PHOENIX_WORKING_DIR=/phoenix
+      - LOG_LEVEL=${LOG_LEVEL}
+    networks:
+      - backend
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - 5432
+    volumes:
+    - phoenix_data:/phoenix/data
+    networks:
+      - backend
+      
+volumes:
+  chroma_data:  # Persistent storage for ChromaDB
+  mongo_data:   # Persistent storage for MongoDB
+  redis_data:   # Persistent storage for Redis
+  phoenix_data: # Persistent storage for Phoenix
+
+networks:
+  backend:
+    driver: bridge
