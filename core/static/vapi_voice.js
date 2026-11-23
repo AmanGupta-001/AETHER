@@ -46,7 +46,7 @@ function getAssistantOverrides() {
             messages: [
                 {
                     role: "system",
-                    content: `You are AETHER (JARVIS Voice Mode), an elite autonomous multi-agent AI assistant created for Aman.
+                    content: `You are AETHER, an elite autonomous multi-agent AI assistant created for Aman.
 You have direct, immediate control over Aman's laptop and tools:
 1. "check_calendar": Read upcoming Google Calendar events. When asked about meetings, schedule, or calendar events, ALWAYS call this tool immediately!
 2. "play_music": Plays requested songs, artists, or genres on YouTube inside Brave browser.
@@ -163,7 +163,7 @@ function setupVapiEventListeners(vapi) {
     vapi.on("call-start", () => {
         isVapiCallActive = true;
         updateVoiceUIState(true);
-        console.log("🎙️ Vapi JARVIS call started.");
+        console.log("🎙️ Vapi AETHER call started.");
     });
 
     vapi.on("speech-start", () => {
@@ -243,7 +243,7 @@ function setupVapiEventListeners(vapi) {
     vapi.on("call-end", () => {
         isVapiCallActive = false;
         updateVoiceUIState(false);
-        console.log("🎙️ Vapi JARVIS call ended.");
+        console.log("🎙️ Vapi AETHER call ended.");
     });
 
     vapi.on("error", (err) => {
@@ -280,11 +280,11 @@ function updateVoiceUIState(isActive) {
     if (isActive) {
         if (orb) {
             orb.classList.add("orb-calling");
-            orb.title = "JARVIS Voice Active — Click to end call";
+            orb.title = "AETHER Voice Active — Click to end call";
         }
         if (badgePill) {
             badgePill.classList.add("badge-active-voice");
-            badgePill.innerHTML = `<span class="status-pulse-dot red-pulse"></span> JARVIS VOICE ACTIVE`;
+            badgePill.innerHTML = `<span class="status-pulse-dot red-pulse"></span> AETHER VOICE ACTIVE`;
         }
         if (vapiBtn) {
             vapiBtn.classList.add("btn-voice-active");
@@ -293,7 +293,7 @@ function updateVoiceUIState(isActive) {
     } else {
         if (orb) {
             orb.classList.remove("orb-calling", "orb-talking");
-            orb.title = "Click to talk with AETHER (Vapi JARVIS Mode)";
+            orb.title = "Click to talk with AETHER (Voice Mode)";
         }
         if (badgePill) {
             badgePill.classList.remove("badge-active-voice");
@@ -301,7 +301,7 @@ function updateVoiceUIState(isActive) {
         }
         if (vapiBtn) {
             vapiBtn.classList.remove("btn-voice-active");
-            vapiBtn.innerHTML = `<span>Talk to JARVIS</span> 🎙️`;
+            vapiBtn.innerHTML = `<span>Talk to AETHER</span> 🎙️`;
         }
     }
 }

@@ -8,11 +8,11 @@
     <script src="/static/ui_elements/chatHistoryList.js?v=5"></script>
     <script src="/static/chat.js?v=5"></script>
     <script src="/static/recording.js?v=5"></script>
-    <script src="/static/socketEvents.js?v=6"></script>
-    <script src="/static/vapi_voice.js?v=6"></script>
-    <script src="/static/index.js?v=6" defer></script>
-    <script src="/static/eventlisteners.js?v=6"></script>
-    <link rel="stylesheet" href="/static/index.css?v=6">
+    <script src="/static/socketEvents.js?v=7"></script>
+    <script src="/static/vapi_voice.js?v=7"></script>
+    <script src="/static/index.js?v=7" defer></script>
+    <script src="/static/eventlisteners.js?v=7"></script>
+    <link rel="stylesheet" href="/static/index.css?v=7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="header-network-visual">
-            <div class="cyber-orb" id="vapiVoiceButton" onclick="toggleVapiCall()" title="Click to talk with AETHER (JARVIS Voice Mode)">
+            <div class="cyber-orb" id="vapiVoiceButton" onclick="toggleVapiCall()" title="Click to talk with AETHER (Voice Mode)">
                 <div class="orb-ring ring-outer"></div>
                 <div class="orb-ring ring-inner"></div>
                 <div class="orb-center">
@@ -69,8 +69,8 @@
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                     </svg>
                 </button>
-                <button id="vapiCallBtn" onclick="toggleVapiCall()" title="Start real-time voice call with JARVIS">
-                    <span>Talk to JARVIS</span> 🎙️
+                <button id="vapiCallBtn" onclick="toggleVapiCall()" title="Start real-time voice call with AETHER">
+                    <span>Talk to AETHER</span> 🎙️
                 </button>
                 <div class="toggle-wrap">
                     <input id="checkbox" type="checkbox" checked>
