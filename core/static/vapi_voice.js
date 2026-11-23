@@ -261,8 +261,7 @@ async function toggleVapiCall() {
             vapi.stop();
         } else {
             console.log("Starting Vapi call with Assistant:", vapiConfig.assistantId);
-            const overrides = getAssistantOverrides();
-            await vapi.start(vapiConfig.assistantId, overrides);
+            await vapi.start(vapiConfig.assistantId);
         }
     } catch (e) {
         console.error("Error toggling Vapi call:", e);
