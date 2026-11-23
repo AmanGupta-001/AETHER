@@ -74,3 +74,4 @@ def play_music(query: Optional[str] = "chill lofi beats") -> str:
 
 def get_tool() -> StructuredTool:
     return play_music
+
