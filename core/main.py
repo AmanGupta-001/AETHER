@@ -6,6 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 from typing import Dict, List
 import asyncio
+import os
 import pymongo
 import requests
 import logging
@@ -229,6 +230,14 @@ async def get_sessions():
     # Newest first
     result.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
     return result
+
+@app.get("/api/vapi/config")
+async def get_vapi_config():
+    """Return Vapi AI public key and assistant ID for real-time voice streaming."""
+    return {
+        "publicKey": os.getenv("VAPI_PUBLIC_KEY", "be2354ea-73f2-4d78-b896-d6a2b3d43078"),
+        "assistantId": os.getenv("VAPI_ASSISTANT_ID", "7ac7e51a-9080-424b-9004-78fa7bd31092")
+    }
 
 class SaveSessionRequest(BaseModel):
     session_id: str

@@ -130,3 +130,4 @@ def system_controller(action: str, target: Optional[str] = None) -> str:
 
 def get_tool() -> StructuredTool:
     return system_controller
+
