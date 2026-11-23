@@ -15,6 +15,7 @@ import tools.painter as painter
 import tools.krypto_time as krypto_tool
 import tools.gmail_read as gmail_read
 import tools.system_monitor as system_monitor
+import tools.play_music as play_music
 
 
 def get_tools() -> list[StructuredTool]:
@@ -34,6 +35,7 @@ def get_tools() -> list[StructuredTool]:
     tools.append(krypto_tool.get_tool())
     tools.append(gmail_read.get_tool())
     tools.append(system_monitor.get_tool())
+    tools.append(play_music.get_tool())
 
     return tools
 
@@ -66,5 +68,6 @@ def get_other_tools() -> list[StructuredTool]:
     tools.append(painter.get_tool())
     tools.append(krypto_tool.get_tool())
     tools.append(system_monitor.get_tool())
+    tools.append(play_music.get_tool())
 
     return tools

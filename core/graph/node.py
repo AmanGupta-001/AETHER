@@ -45,7 +45,7 @@ class Node:
         1. Never respond with an empty string. The output must always be either 'use_tool' or 'generate'.
         
         2. ALWAYS respond with 'use_tool' when:
-            - The user is giving an explicit instruction to EXECUTE an action (e.g., "draw a cat", "search for the weather", "schedule a meeting")
+            - The user is giving an explicit instruction to EXECUTE an action (e.g., "play music", "play song on youtube", "draw a cat", "search for the weather", "schedule a meeting", "check system performance")
             - The request involves calendar actions (create, add, schedule, remind, appointment, meeting, event)
             - The request requires searching for information online
             - The request asks for data that isn't in the conversation history
@@ -109,7 +109,7 @@ class Node:
             Your options for agents are the following:
             - "perplexity": This agent has access to web search and chat search: {perplexity_tools}
             - "calendar":   This agent has access to calendar tools: {calendar_tools}
-            - "other":      This agent handles system monitoring (laptop CPU, RAM, GPU, storage, temperature, battery), local files, and general tools: {other_tools}
+            - "other":      This agent handles playing music/videos on YouTube/Brave, system monitoring (laptop CPU, RAM, GPU, storage, temperature, battery), local files, and general tools: {other_tools}
 
 
             Answer with the option name and nothing else there should not be any ' or " in the answer.

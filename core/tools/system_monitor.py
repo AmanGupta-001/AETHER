@@ -156,3 +156,4 @@ def system_monitor(category: Optional[str] = "all") -> str:
 
 def get_tool() -> StructuredTool:
     return system_monitor
+
