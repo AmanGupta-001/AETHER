@@ -107,11 +107,9 @@ class Node:
             Data: {data}
 
             Your options for agents are the following:
-            - "perplexity": This agent has access to tools that use the perplexity API and tools 
-                            for doing a chat history search. These tools are the following: {perplexity_tools}
-            - "calendar":   This agent has access to calendar tools
-                             These tools are the following: {calendar_tools}
-            - "other":      Other tools available: {other_tools}
+            - "perplexity": This agent has access to web search and chat search: {perplexity_tools}
+            - "calendar":   This agent has access to calendar tools: {calendar_tools}
+            - "other":      This agent handles system monitoring (laptop CPU, RAM, GPU, storage, temperature, battery), local files, and general tools: {other_tools}
 
 
             Answer with the option name and nothing else there should not be any ' or " in the answer.
