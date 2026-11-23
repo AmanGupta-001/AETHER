@@ -1,6 +1,7 @@
 /**
  * AETHER — Vapi AI Real-Time Conversational Voice Module
  * Sub-500ms voice-to-voice with Deepgram STT, natural barge-in, and human speech.
+ * Integrated with AETHER laptop tools: Google Calendar, YouTube Music, Hardware Monitor, System Controls.
  */
 
 let vapiInstance = null;
@@ -38,6 +39,112 @@ async function fetchVapiConfig() {
     }
 }
 
+// Build assistant overrides with system instructions and laptop function tools
+function getAssistantOverrides() {
+    return {
+        model: {
+            messages: [
+                {
+                    role: "system",
+                    content: `You are AETHER (JARVIS Voice Mode), an elite autonomous multi-agent AI assistant created for Aman.
+You have direct, immediate control over Aman's laptop and tools:
+1. "check_calendar": Read upcoming Google Calendar events. When asked about meetings, schedule, or calendar events, ALWAYS call this tool immediately!
+2. "play_music": Plays requested songs, artists, or genres on YouTube inside Brave browser.
+3. "system_monitor": Checks real-time laptop hardware telemetry (CPU, RAM, NVIDIA RTX 3050 Laptop GPU, drive storage, battery, temperature).
+4. "system_controller": Controls Windows applications (notepad, calc, spotify, vscode, paint, taskmgr), folders (downloads, documents, desktop), media keys (volume_up, volume_down, mute, play_pause), or locks the workstation.
+5. "web_search": Searches the live web for up-to-date queries.
+
+NEVER say you don't have access to the user's calendar, apps, or device. You DO have access through your client tools. Always trigger the appropriate tool function call immediately whenever requested.`
+                }
+            ],
+            tools: [
+                {
+                    type: "function",
+                    async: true,
+                    function: {
+                        name: "check_calendar",
+                        description: "Fetches upcoming events and schedule from the user's Google Calendar.",
+                        parameters: {
+                            type: "object",
+                            properties: {}
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    async: true,
+                    function: {
+                        name: "play_music",
+                        description: "Plays a song, artist, album, or playlist on YouTube in Brave browser.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                query: {
+                                    type: "string",
+                                    description: "Song title, artist, or music query, e.g. 'Starboy', 'Lofi hip hop beats', 'Coldplay'"
+                                }
+                            },
+                            required: ["query"]
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    async: true,
+                    function: {
+                        name: "system_monitor",
+                        description: "Retrieves live hardware telemetry: CPU load, RAM usage, NVIDIA RTX 3050 Laptop GPU, storage space, battery %, and temperatures.",
+                        parameters: {
+                            type: "object",
+                            properties: {}
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    async: true,
+                    function: {
+                        name: "system_controller",
+                        description: "Controls Windows apps (Notepad, Calculator, Spotify, VS Code, Paint, Task Manager), opens folders (Downloads, Documents, Desktop), controls media volume (volume_up, volume_down, mute), or locks the laptop.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                action: {
+                                    type: "string",
+                                    description: "Action to take: 'launch_app', 'open_folder', 'media_control', 'lock_screen'"
+                                },
+                                target: {
+                                    type: "string",
+                                    description: "Target application name, folder name, or media key (e.g. 'notepad', 'calc', 'downloads', 'volume_up', 'mute')"
+                                }
+                            },
+                            required: ["action"]
+                        }
+                    }
+                },
+                {
+                    type: "function",
+                    async: true,
+                    function: {
+                        name: "web_search",
+                        description: "Performs live web search for real-time information, weather, or news.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                query: {
+                                    type: "string",
+                                    description: "The search query"
+                                }
+                            },
+                            required: ["query"]
+                        }
+                    }
+                }
+            ]
+        }
+    };
+}
+
 // Initialize Vapi client instance
 async function getVapiClient() {
     if (!vapiInstance) {
@@ -69,19 +176,63 @@ function setupVapiEventListeners(vapi) {
         if (orb) orb.classList.remove("orb-talking");
     });
 
-    vapi.on("message", (msg) => {
+    vapi.on("message", async (msg) => {
         if (!msg) return;
 
-        // Render transcripts live into AETHER's chat stream
+        // 1. Handle Tool Calls from Vapi (Calendar, Music, System, Hardware)
+        if (msg.type === "tool-calls") {
+            const toolCalls = msg.toolCallList || [];
+            for (const tc of toolCalls) {
+                const fn = tc.function || tc;
+                const toolName = fn.name;
+                let args = fn.arguments;
+                if (typeof args === "string") {
+                    try { args = JSON.parse(args); } catch(e) { args = {}; }
+                }
+                console.log(`⚡ Vapi triggered tool: ${toolName}`, args);
+
+                try {
+                    const res = await fetch("/api/tools/execute", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ tool_name: toolName, parameters: args || {} })
+                    });
+                    const data = await res.json();
+                    const output = data.result || data.error || "Completed";
+
+                    // Display tool execution in chat UI
+                    const uuid = "vapi-tool-" + Date.now();
+                    if (typeof addMessage === "function") {
+                        addMessage(marked.parse(`⚙️ **Executed Tool: ${toolName}**\n\n${output}`), uuid);
+                    }
+
+                    // Feed tool result back to Vapi so the assistant speaks it to Aman
+                    if (vapiInstance) {
+                        vapiInstance.send({
+                            type: "add-message",
+                            message: {
+                                role: "system",
+                                content: `Tool '${toolName}' executed on Aman's laptop. Result:\n${output}\n\nNow concisely and naturally speak this result to Aman.`
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error("Tool execution failed:", err);
+                }
+            }
+            return;
+        }
+
+        // 2. Render transcripts live into AETHER's chat stream
         if (msg.type === "transcript" && msg.transcriptType === "final") {
             const text = msg.transcript;
             if (!text) return;
 
             if (msg.role === "user") {
-                addUserMessage(marked.parse(text));
+                if (typeof addUserMessage === "function") addUserMessage(marked.parse(text));
             } else if (msg.role === "assistant") {
                 const uuid = typeof generateUUID === "function" ? generateUUID() : "vapi-" + Date.now();
-                addMessage(marked.parse(text), uuid);
+                if (typeof addMessage === "function") addMessage(marked.parse(text), uuid);
             }
 
             const chatHistory = document.getElementById("chat_history");
@@ -110,7 +261,8 @@ async function toggleVapiCall() {
             vapi.stop();
         } else {
             console.log("Starting Vapi call with Assistant:", vapiConfig.assistantId);
-            await vapi.start(vapiConfig.assistantId);
+            const overrides = getAssistantOverrides();
+            await vapi.start(vapiConfig.assistantId, overrides);
         }
     } catch (e) {
         console.error("Error toggling Vapi call:", e);

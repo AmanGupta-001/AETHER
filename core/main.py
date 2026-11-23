@@ -239,6 +239,40 @@ async def get_vapi_config():
         "assistantId": os.getenv("VAPI_ASSISTANT_ID", "7ac7e51a-9080-424b-9004-78fa7bd31092")
     }
 
+class ExecuteToolRequest(BaseModel):
+    tool_name: str
+    parameters: dict = {}
+
+@app.post("/api/tools/execute")
+async def execute_tool(data: ExecuteToolRequest):
+    """Execute any registered AETHER tool directly (for Vapi voice and direct agent calls)."""
+    import tools.tools as tools_module
+    all_tools = {t.name: t for t in tools_module.get_tools()}
+    
+    # Map common aliases from Vapi to exact tool names
+    alias_map = {
+        "check_calendar": "read_calendar_events",
+        "get_calendar": "read_calendar_events",
+        "read_calendar": "read_calendar_events",
+        "calendar": "read_calendar_events",
+        "get_system_telemetry": "system_monitor",
+        "monitor": "system_monitor",
+        "telemetry": "system_monitor"
+    }
+    tool_name = alias_map.get(data.tool_name, data.tool_name)
+    
+    if tool_name not in all_tools:
+        raise HTTPException(status_code=404, detail=f"Tool '{data.tool_name}' not found.")
+    
+    target_tool = all_tools[tool_name]
+    try:
+        params = data.parameters or {}
+        res = target_tool.invoke(params)
+        return {"success": True, "tool_name": tool_name, "result": str(res)}
+    except Exception as e:
+        log.error(f"Error executing tool {tool_name}: {e}")
+        return {"success": False, "tool_name": tool_name, "error": str(e)}
+
 class SaveSessionRequest(BaseModel):
     session_id: str
     human_message: str
